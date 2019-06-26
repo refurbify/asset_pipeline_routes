@@ -23,18 +23,22 @@ module AssetPipelineRoutes
     end
 
     def self.call input
-      new_data = input[:data].to_s.gsub REGEX do |match|
-        str = match[2..-2]
-        parts = str.split(',').map(&:strip).reject(&:blank?)
-        return match if parts.empty?
-        route = parts.shift.to_sym
-        if r.respond_to?(route)
-          r.send route, *parts
-        else
-          match
+      if input[:filename].to_s.ends_with?('min.js') || input[:filename].to_s.include?('gantt')
+        new_data = input[:data].to_s.gsub REGEX do |match|
+          str = match[2..-2]
+          parts = str.split(',').map(&:strip).reject(&:blank?)
+          return match if parts.empty?
+          route = parts.shift.to_sym
+          if r.respond_to?(route)
+            r.send route, *parts
+          else
+            match
+          end
         end
+        { data: new_data }
+      else
+        { data: input[:data] }
       end
-      { data: new_data }
     end
   end
 end
